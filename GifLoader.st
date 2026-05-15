@@ -98,8 +98,10 @@ CASE nState OF
 // ------------------------------------------------------------
 10: // Trigger file open
     fbOpen(bExecute  := TRUE,
+           sNetId    := '',            // empty = local target
            sPathName := sFilePath,
-           nMode     := FOPEN_MODEREAD OR FOPEN_MODETEXT);
+           nMode     := FOPEN_MODEREAD OR FOPEN_MODETEXT,
+           ePath     := PATH_GENERIC); // interpret sFilePath as absolute Windows path
     nState := 11;
 
 11: // Wait for file open to complete
@@ -117,11 +119,11 @@ CASE nState OF
 
 // ------------------------------------------------------------
 20: // Trigger read of header row (discard it)
-    fbGets(bExecute := TRUE, hFile := hFile, sLine := sLine);
+    fbGets(bExecute := TRUE, sNetId := '', hFile := hFile, sLine := sLine);
     nState := 21;
 
 21: // Wait for header read
-    fbGets(bExecute := FALSE, hFile := hFile, sLine := sLine);
+    fbGets(bExecute := FALSE, sNetId := '', hFile := hFile, sLine := sLine);
     IF NOT fbGets.bBusy THEN
         IF fbGets.bError OR fbGets.bEOF THEN
             bError    := TRUE;
@@ -139,12 +141,12 @@ CASE nState OF
         nFrameCount := nFrame;
         nState      := 90;
     ELSE
-        fbGets(bExecute := TRUE, hFile := hFile, sLine := sLine);
+        fbGets(bExecute := TRUE, sNetId := '', hFile := hFile, sLine := sLine);
         nState := 31;
     END_IF
 
 31: // Wait for frame line read
-    fbGets(bExecute := FALSE, hFile := hFile, sLine := sLine);
+    fbGets(bExecute := FALSE, sNetId := '', hFile := hFile, sLine := sLine);
     IF NOT fbGets.bBusy THEN
         IF fbGets.bEOF OR LEN(sLine) = 0 THEN
             // End of file — all frames loaded
@@ -208,11 +210,11 @@ CASE nState OF
 
 // ------------------------------------------------------------
 90: // Trigger file close
-    fbClose(bExecute := TRUE, hFile := hFile);
+    fbClose(bExecute := TRUE, sNetId := '', hFile := hFile);
     nState := 91;
 
 91: // Wait for file close
-    fbClose(bExecute := FALSE);
+    fbClose(bExecute := FALSE, sNetId := '', hFile := hFile);
     IF NOT fbClose.bBusy THEN
         nState := 99;
     END_IF
